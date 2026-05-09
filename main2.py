@@ -86,7 +86,7 @@ def generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsert
          You are a helpful python tutor. Right now you need to understand what topic the user wants to be tested on.
         The user has entered this: \n {firstin} \n
         Generate the name of the topic to be tested in the specified schema. 
-        If it is unclear then suggest your own topic. If there is a clear topic then just follow what the user meant. \n
+        If it is unclear then suggest your own topic, which must be python related. If there is a clear topic then just follow what the user meant. \n
         Format instructions: {format_instructions}
         You must force JSON output only, NOTHING ELSE
         """,
@@ -100,6 +100,8 @@ def generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsert
         print(output)
         topic = output.topic
         agent_state["Topic"] = topic
+        agent_state["Now"]="Pose Question"
+        print(agent_state["Now"])
         return topic, agent_state
         
 
@@ -138,7 +140,10 @@ def generate_question(agent_state=agent_state, model = model, pydparserquest = p
         print(output)
         question = output.question
         agent_state["question_list"] = agent_state["question_list"].append(question)
+        agent_state["Now"]="Waiting for Response"
         return question, agent_state
 
+generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsertopic)
+generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest)
 
 
