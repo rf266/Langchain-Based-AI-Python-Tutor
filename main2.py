@@ -188,20 +188,21 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
         agent_state["correct"] = output.correct
         agent_state["feedback"].append(output.feedback)
         if agent_state["correct"]==1:
-            agent_state["topic"]= None
-            questlist = []
-            agent_state["count_topic_question"]= 0
-            agent_state["num_attempts"] =0
-            agent_state ["correct"]= 0
             feed = []
             responses_to_current =[]
             agent_state["Now "] = "End of Question"
+            if agent_state["count_topic_question"] == 5:
+                agent_state["topic"]= None
+                questlist = []
+                agent_state["count_topic_question"]= 0
+                agent_state["num_attempts"] =0
+                agent_state ["correct"]= 0
+                feed = []
+                responses_to_current =[]
+                agent_state["Now "] = "End of Question"
         
 
 
-             
-          
-    
 
 generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsertopic)
 generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest)
