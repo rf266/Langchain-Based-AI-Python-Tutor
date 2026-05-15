@@ -37,9 +37,9 @@ A one to many relationship is demonstrated - one topic can have many questions, 
 
 ## Sources - non exhaustive 
 
-AI was used throuhgout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate through unfamiliar challenges. Rather than taking its suggestions blindly, I tried to understand how and why it would fit into my code. Programming knowledge cannot truly be replaced by AI. 
+AI was used throuhgout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate through unfamiliar challenges. Rather than taking its suggestions blindly, I tried to understand how and why it would fit into my code. It was also significant in decisions of rethinking architecture where the workflow did not work as expected. Suggested solutions were implemented with a careful eye. 
 
-One of the main challenges was navigating outdated documentation/fixes, even if published recently. Langchain grows at a rapid rate, and updates are done to the package quite frequently, and they are not all reflected. 
+One of the main challenges was navigating outdated documentation/fixes, even if published recently. Langchain grows at a rapid rate, and updates are done to the package quite frequently, and they are not all reflected. This is another reason why AI was used, to guide me through a process of finding a working solution. 
 
 By looking at forums, I was able to understand how to better structure my code, especially docstrings, which are the fundamental instruction for the LLM's tool orchestration. 
 
@@ -82,6 +82,10 @@ https://www.youtube.com/watch?v=vzJOAnwIokM - Langchain overview
 https://medium.com/data-and-beyond/output-parsers-in-langchain-b2e0db20880f -  output parsers
 
 https://www.youtube.com/watch?v=v9G-h6Ygokk - LCEL operator
+
+https://stackoverflow.com/questions/5191503/how-to-select-the-last-record-of-a-table-in-sql - Latest entry in DB
+
+https://www.youtube.com/watch?v=Hyo9rIuYlFc&t=40s - DB extraction statement
 
 #### Stack overflow questions I posted
 

@@ -47,8 +47,27 @@ sql2 = """create table if not exists QUESTIONS(
     FOREIGN KEY (TopicID) REFERENCES TOPICS(TopicID)
 )"""
 
-cursor.execute(sql1)
-cursor.execute(sql2)
+if not os.path.exists("learn.db"):
+    cursor.execute(sql1)
+    cursor.execute(sql2)
+
+else:
+     sql_latesttopics = """SELECT * FROM TOPICS ORDER BY TopicID DESC LIMIT 1"""
+     sql_latestquest_row = """SELECT * FROM QUESTIONS ORDER BY QID DESC LIMIT 1"""
+
+     cursor.execute(sql_latesttopics)
+     out1 = cursor.fetchone()
+     first_topic = out1[1]
+     first_understood = out1[2]
+
+     sql_quest_lists = f"""SELECT * FROM QUESTIONS WHERE TopicID = (SELECT TopicID WHERE Topic={first_topic}) """
+     cursor.execute(sql_quest_lists)
+     out2 = cursor.fetchall()
+     print(out2)
+
+
+
+
 
 print("DB generated")
 
@@ -202,7 +221,7 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
                 agent_state["Now "] = "End of Question"
         
 
-
+# today - database manipulation 
 
 generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsertopic)
 generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest)
