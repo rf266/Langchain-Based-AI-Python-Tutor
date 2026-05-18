@@ -18,6 +18,7 @@ happening_now = ["Accepting Topic","Pose Question", "Waiting for Response", "Pro
 feed = []
 agent_state = {
     "topic": None,
+    "topic_understood": 0,
     "question_list": questlist, 
     "count_topic_question": 0,
     "num_attempts" :0,
@@ -47,27 +48,24 @@ sql2 = """create table if not exists QUESTIONS(
     FOREIGN KEY (TopicID) REFERENCES TOPICS(TopicID)
 )"""
 
-if not os.path.exists("learn.db"):
+if (not os.path.exists("learn.db")) or ((cursor.execute("""SELECT COUNT(*) FROM TOPICS""") or cursor.execute( """SELECT COUNT(*) FROM QUESTIONS""") )==0):
+ # if the db doesn't exist yet or tables are empty, (re)create it from scratch
     cursor.execute(sql1)
     cursor.execute(sql2)
 
-else:
-     sql_latesttopics = """SELECT * FROM TOPICS ORDER BY TopicID DESC LIMIT 1"""
-     sql_latestquest_row = """SELECT * FROM QUESTIONS ORDER BY QID DESC LIMIT 1"""
+else: # otherwise populate the state dictionary with the latest record
+     sql_latesttopics = """SELECT * FROM TOPICS ORDER BY TopicID DESC LIMIT 1""" # find the latest topic from last record
 
      cursor.execute(sql_latesttopics)
      out1 = cursor.fetchone()
      first_topic = out1[1]
      first_understood = out1[2]
 
-     sql_quest_lists = f"""SELECT * FROM QUESTIONS WHERE TopicID = (SELECT TopicID WHERE Topic={first_topic}) """
-     cursor.execute(sql_quest_lists)
+     sql_quest_lists = f"""SELECT Question FROM QUESTIONS WHERE TopicID = (SELECT TopicID FROM TOPICS WHERE Topic=(?) ORDER BY QID """
+     cursor.execute(sql_quest_lists,(first_topic))
      out2 = cursor.fetchall()
      print(out2)
-
-
-
-
+     questlist.append(out2)
 
 print("DB generated")
 
@@ -219,7 +217,15 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
                 feed = []
                 responses_to_current =[]
                 agent_state["Now "] = "End of Question"
-        
+
+            questinsert = """INSERT INTO QUESTIONS (?,?,?,?,?,?)"""
+            topicinsert = """INSERT INTO TOPIC (?,?,?)"""
+            find_topid_id = """SELECT TopicID FROM TOPIC WHERE Topic = (?)"""
+            cursor.execute(find_topid_id, agent_state["topic"])
+            topicid = (cursor.fetchall())[0]
+            cursor.execute(topicinsert,(None, agent_state["topic"],0))
+            cursor.execute(questinsert,(None, topicid,nowquestion,agent_state["responses_to_current_q"],feed,num_attempts))
+            
 
 # today - database manipulation 
 

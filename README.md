@@ -87,6 +87,8 @@ https://stackoverflow.com/questions/5191503/how-to-select-the-last-record-of-a-t
 
 https://www.youtube.com/watch?v=Hyo9rIuYlFc&t=40s - DB extraction statement
 
+https://stackoverflow.com/questions/4397757/how-can-i-check-to-see-if-my-sqlite-table-has-data-in-it - check if tables are empty 
+
 #### Stack overflow questions I posted
 
 - https://stackoverflow.com/questions/79907528/why-does-groq-langchain-model-return-tool-use-failed-error/79907609#79907609
