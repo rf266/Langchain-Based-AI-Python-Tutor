@@ -204,11 +204,29 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
         print(output)
         agent_state["correct"] = output.correct
         agent_state["feedback"].append(output.feedback)
+        
+        if agent_state["num_attempts"] == 1: #if its the first time the question has beeen posed
+            questinsert = """INSERT INTO QUESTIONS (?,?,?,?,?,?)"""
+            topicinsert = """INSERT INTO TOPIC (?,?,?)"""
+            find_topid_id = """SELECT TopicID FROM TOPIC WHERE Topic = (?)"""
+            cursor.execute(find_topid_id, agent_state["topic"])
+            topicid = (cursor.fetchall())[0]
+            cursor.execute(topicinsert,(None, agent_state["topic"],0))
+            cursor.execute(questinsert,(None, topicid,nowquestion,agent_state["responses_to_current_q"],feed,num_attempts))
+
+        else: #update the response and feedback record
+            update_feed_ans = """UPDATE QUESTIONS SET Response = (?), Feedback = (?), Attempts = (?)"""
+            cursor.execute(update_feed_ans, (responses_to_current, feed, agent_state["num_attempts"]))
+
         if agent_state["correct"]==1:
+            agent_state["Now "] = "End of Question"
+             # reset for the next q 
             feed = []
             responses_to_current =[]
-            agent_state["Now "] = "End of Question"
-            if agent_state["count_topic_question"] == 5:
+           
+            if agent_state["count_topic_question"] == 5: # if we have finished with the topic, reset the state 
+                update_understood = """UPDATE TOPICS SET Undersood = 1"""
+                cursor.execute(update_understood)
                 agent_state["topic"]= None
                 questlist = []
                 agent_state["count_topic_question"]= 0
@@ -218,18 +236,9 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
                 responses_to_current =[]
                 agent_state["Now "] = "End of Question"
 
-            questinsert = """INSERT INTO QUESTIONS (?,?,?,?,?,?)"""
-            topicinsert = """INSERT INTO TOPIC (?,?,?)"""
-            find_topid_id = """SELECT TopicID FROM TOPIC WHERE Topic = (?)"""
-            cursor.execute(find_topid_id, agent_state["topic"])
-            topicid = (cursor.fetchall())[0]
-            cursor.execute(topicinsert,(None, agent_state["topic"],0))
-            cursor.execute(questinsert,(None, topicid,nowquestion,agent_state["responses_to_current_q"],feed,num_attempts))
             
-
-# today - database manipulation 
-
-generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsertopic)
-generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest)
-get_ans(agent_state=agent_state)
-mark_response(agent_state=agent_state, model = model , pydparserfeed=pydparserfeed)
+                
+    generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsertopic)
+    generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest)
+    get_ans(agent_state=agent_state)
+    mark_response(agent_state=agent_state, model = model , pydparserfeed=pydparserfeed)
