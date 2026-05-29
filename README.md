@@ -7,17 +7,17 @@ This agent is an AI-powered coding tutor. It is designed to help users strengthe
 ## Tech Stack
 - Langchain agent orchestration
 - SQLite database storage
-- Streamlit prototyping
+- Streamlit prototyping - future
 
 *AI was used throuhgout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate through unfamiliar challenges.*
 
 ## Significant Decisions in Agent Development
 
 - Agent creation 
-The structure and functions of the different components of a Langchain agent were investigated. This was used instead of sending API calls to the LLM due to the presence of tool functions which could be used as required by the situation. The chosen LLM, after experimenting with responses and token size limitations, was Llama 4 Scout, obtained from Groq.
+The structure and functions of the different components of a Langchain agent were investigated. This was used instead of sending API calls to the LLM due to the presence of tool functions which could be used as required by the situation. The chosen LLM, after experimenting with responses and token size limitations, was Llama 4 Scout, obtained from Groq. However, after looking into advice from AI after resulting in multiple 'tool use failed' errors, the tool functionality was abandoned for normal function definitions. 
 
 - Tool Development
-One of the most significant challenges was seen in tool development, where, after research and AI consultation, it was found that the LLM must be explicitly shown the tools it can used to operate as desired. The uncertainty created by missing information causes the model to behave unpredictably, where I even found that it was creating its own functions, as well as generating its own SQL queries. 
+One of the most significant challenges was seen in tool development, where, after research and AI consultation, it was found that the LLM must be explicitly shown the tools it can used to operate as desired. The uncertainty created by missing information causes the model to behave unpredictably, where I even found that it was creating its own functions, as well as generating its own SQL queries. Hence after online and AI research, this is currently not being used, although it may be done for less pertinent features. 
 
 Another important consideration was the level of detail to be provided in tool docstrings. It was often the case that the lengthy docstrings would override token limitations, especially in the earlier LLMs tested. I learnt how to ensure that the LLM has complete knowledge over the full interactions it can have over the tool. 
 
@@ -88,6 +88,8 @@ https://stackoverflow.com/questions/5191503/how-to-select-the-last-record-of-a-t
 https://www.youtube.com/watch?v=Hyo9rIuYlFc&t=40s - DB extraction statement
 
 https://stackoverflow.com/questions/4397757/how-can-i-check-to-see-if-my-sqlite-table-has-data-in-it - check if tables are empty 
+
+https://www.w3schools.com/Python/python_try_except.asp - Try except statement
 
 #### Stack overflow questions I posted
 

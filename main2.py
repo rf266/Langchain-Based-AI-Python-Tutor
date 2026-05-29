@@ -54,6 +54,8 @@ def setup():
     except sqlite3.OperationalError:  #if TOPICS doesn't exist - must mean that the QUESTIONS doesn't exist either - checking if the db exists
         cursor.execute(sql1)
         cursor.execute(sql2)     
+        print("DB generated")
+        connection.commit()
     else: #otherwise populate the state dictionary with the latest record if the tables aren't empty
         cursor.execute("""SELECT COUNT(*) FROM TOPICS""")
         rowstopic = cursor.fetchone()
@@ -111,7 +113,7 @@ def setup():
             agent_state["topic_understood"] = first_understood
             agent_state["Now"] = "Pose Question"
 
-    print("DB generated")
+    
 
 system_prompt = "You are a helpful Python Programming tutor. " \
 "You will generate questions as called by functions to test the user on their desired concepts. " \
@@ -172,6 +174,8 @@ def generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsert
 
         topicinsert = """INSERT INTO TOPICS (TopicID, Topic, Understood) VALUES (?,?,?)"""
         cursor.execute(topicinsert, (None, topic, 0))
+        connection.commit()
+
         return topic, agent_state
         
 
@@ -188,7 +192,7 @@ def generate_question(agent_state=agent_state, model = model, pydparserquest = p
         JSON output with one field, "Question" 
     """
     
-    topic_now = agent_state["Topic"]
+    topic_now = agent_state["topic"]
     prevq = agent_state["question_list"]
 
     prompt = PromptTemplate(
@@ -255,15 +259,16 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
         if agent_state["num_attempts"] == 1: #if its the first time the question has beeen posed
             questinsert = """INSERT INTO QUESTIONS (QID, TopicID, Question, Response, Feedback, Attempts) VALUES (?,?,?,?,?,?)"""
             find_topid_id = """SELECT TopicID FROM TOPICS WHERE Topic = (?)"""
-            cursor.execute(find_topid_id, agent_state["topic"])
-            topicid = (cursor.fetchall())[0]
+            cursor.execute(find_topid_id, (agent_state["topic"],))
+            topicid = cursor.fetchone()
+            topicid = topicid[0]
             #cursor.execute(topicinsert,(None, agent_state["topic"],0))
             cursor.execute(questinsert,(None, topicid,nowquestion,agent_state["responses_to_current_q"],feed,num_attempts))
-
+            connection.commit()
         else: #update the response and feedback record
             update_feed_ans = """UPDATE QUESTIONS SET Response = (?), Feedback = (?), Attempts = (?)"""
-            cursor.execute(update_feed_ans, (responses_to_current, feed, agent_state["num_attempts"]))
-
+            cursor.execute(update_feed_ans, (str(responses_to_current), str(feed), agent_state["num_attempts"]))
+            connection.commit()
         if agent_state["correct"]==1:
             agent_state["Now"] = "End of Question"
              #reset for the next q 
@@ -273,6 +278,7 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
             if agent_state["count_topic_question"] == 5: #if we have finished with the topic, reset the state 
                 update_understood = """UPDATE TOPICS SET Understood = 1"""
                 cursor.execute(update_understood)
+                connection.commit()
                 agent_state["topic"]= None
                 questlist = []
                 agent_state["count_topic_question"]= 0
@@ -292,3 +298,4 @@ print("\n===Check 3 of agent state ", agent_state, "===")
 get_ans(agent_state=agent_state)
 print("\n===Check 4 of agent state ", agent_state, "===")   
 mark_response(agent_state=agent_state, model = model , pydparserfeed=pydparserfeed)
+print("\n===Check 5 of agent state ", agent_state, "===")  
