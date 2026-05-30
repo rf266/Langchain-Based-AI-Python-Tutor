@@ -91,6 +91,8 @@ https://stackoverflow.com/questions/4397757/how-can-i-check-to-see-if-my-sqlite-
 
 https://www.w3schools.com/Python/python_try_except.asp - Try except statement
 
+https://stackoverflow.com/questions/10588317/python-function-global-variables - Global variable manipulation
+
 #### Stack overflow questions I posted
 
 - https://stackoverflow.com/questions/79907528/why-does-groq-langchain-model-return-tool-use-failed-error/79907609#79907609

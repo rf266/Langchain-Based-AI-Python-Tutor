@@ -14,7 +14,7 @@ api = os.getenv("GROQ_API_KEY")
 
 questlist = []
 responses_to_current = []
-happening_now = ["Accepting Topic","Pose Question", "Waiting for Response", "Providing Feedback", "End of Question" ,"Discussion"]
+happening_now = ["Accepting Topic","Pose Question", "Waiting for Response", "Providing Feedback", "End of Question" ,"End of Topic"]
 feed = []
 agent_state = {
     "topic": None,
@@ -73,11 +73,12 @@ def setup():
             first_understood = out1[2] 
             agent_state["topic_understood"] = first_understood
 
-            sql_quest_lists = f"""SELECT Question FROM QUESTIONS WHERE TopicID = (SELECT TopicID FROM TOPICS WHERE Topic=(?) ORDER BY QID )"""
-            cursor.execute(sql_quest_lists,(first_topic))
+            sql_quest_lists = f"""SELECT Question FROM QUESTIONS WHERE TopicID = (SELECT TopicID FROM TOPICS WHERE Topic=(?) )  ORDER BY QID"""
+            cursor.execute(sql_quest_lists,(first_topic,))
             out2 = cursor.fetchall()
             print(out2)
-            questlist.append(out2) # added the questions previously tested
+            for item in out2:
+                questlist.append(item[0]) # added the questions previously tested
 
             agent_state["count_topic_question"] = len(questlist) #number of questions tested
 
@@ -95,12 +96,12 @@ def setup():
             if agent_state["count_topic_question"] ==5: #case where we are at the end of the current topic, reset state dict
                 agent_state["Now"] = "Accepting Topic"
                 agent_state["topic"]= None
-                questlist = []
+                agent_state["question_list"].clear()
                 agent_state["count_topic_question"]= 0
                 agent_state["num_attempts"] =0
                 agent_state ["correct"]= 0
-                feed = []
-                responses_to_current =[]       
+                agent_state["feedback"].clear()
+                agent_state["responses_to_current_q"].clear()       
 
         elif (rowstopic[0]>0) and (rowsquest[0]==0): #case where a topic is established but no questions asked yet
             sql_latesttopics = """SELECT * FROM TOPICS ORDER BY TopicID DESC LIMIT 1""" # find the latest topic from last record
@@ -114,13 +115,7 @@ def setup():
             agent_state["Now"] = "Pose Question"
 
     
-
-system_prompt = "You are a helpful Python Programming tutor. " \
-"You will generate questions as called by functions to test the user on their desired concepts. " \
-"You will then mark their responses. Act as you are told by the prompts - more info will follow"
-
 model = ChatGroq(api_key=api, model="meta-llama/llama-4-scout-17b-16e-instruct", temperature=0.3)
-agents = create_agent(model=model, system_prompt=system_prompt)
 
 class Topic_structure(BaseModel):
         topic: str = Field(description="Programming topic extracted from user input")
@@ -163,12 +158,12 @@ def generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsert
         partial_variables={"format_instructions": pydparsertopic.get_format_instructions()}
 
     )
-    if (agent_state["Now"]=="Accepting Topic") and ( agent_state["count_topic_question"]==0):
+    if (agent_state["Now"]=="Accepting Topic" or agent_state["Now"]=="End of Topic" ) and ( agent_state["count_topic_question"]==0):
         chain = prompt | model | pydparsertopic
         output = chain.invoke({"firstin": firstin})
         print(output)
         topic = output.topic
-        agent_state["Topic"] = topic
+        agent_state["topic"] = topic
         agent_state["Now"]="Pose Question"
         print(agent_state["Now"])
 
@@ -208,7 +203,7 @@ def generate_question(agent_state=agent_state, model = model, pydparserquest = p
         partial_variables={"format_instructions": pydparserquest.get_format_instructions()}
 
     ) 
-    if agent_state["Now"]=="Pose Question" and len(agent_state["question_list"])<5:
+    if (agent_state["Now"]=="Pose Question" or agent_state["Now"]=="End of Question"  )and len(agent_state["question_list"])<5:
         chain = prompt | model | pydparserquest
         output = chain.invoke({"topic_now": topic_now, "prevq":prevq})
         print(output)
@@ -255,47 +250,52 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
         print(output)
         agent_state["correct"] = output.correct
         agent_state["feedback"].append(output.feedback)
-        
+        find_topid_id = """SELECT TopicID FROM TOPICS WHERE Topic = (?)"""
+        cursor.execute(find_topid_id, (agent_state["topic"],))
+        topicid = cursor.fetchone()
+        topicid = topicid[0]
+
         if agent_state["num_attempts"] == 1: #if its the first time the question has beeen posed
             questinsert = """INSERT INTO QUESTIONS (QID, TopicID, Question, Response, Feedback, Attempts) VALUES (?,?,?,?,?,?)"""
-            find_topid_id = """SELECT TopicID FROM TOPICS WHERE Topic = (?)"""
-            cursor.execute(find_topid_id, (agent_state["topic"],))
-            topicid = cursor.fetchone()
-            topicid = topicid[0]
             #cursor.execute(topicinsert,(None, agent_state["topic"],0))
-            cursor.execute(questinsert,(None, topicid,nowquestion,agent_state["responses_to_current_q"],feed,num_attempts))
+            cursor.execute(questinsert,(None, topicid,nowquestion,str(agent_state["responses_to_current_q"]),str(feed),num_attempts))
             connection.commit()
         else: #update the response and feedback record
-            update_feed_ans = """UPDATE QUESTIONS SET Response = (?), Feedback = (?), Attempts = (?)"""
-            cursor.execute(update_feed_ans, (str(responses_to_current), str(feed), agent_state["num_attempts"]))
+            update_feed_ans = """UPDATE QUESTIONS SET Response = (?), Feedback = (?), Attempts = (?) WHERE Question=(?)"""
+            cursor.execute(update_feed_ans, (str(responses_to_current), str(feed), agent_state["num_attempts"], nowquestion))
             connection.commit()
+
         if agent_state["correct"]==1:
             agent_state["Now"] = "End of Question"
              #reset for the next q 
-            feed = []
-            responses_to_current =[]
+            agent_state["feedback"].clear()
+            agent_state["responses_to_current_q"].clear()
+            agent_state["num_attempts"] = 0
            
             if agent_state["count_topic_question"] == 5: #if we have finished with the topic, reset the state 
-                update_understood = """UPDATE TOPICS SET Understood = 1"""
-                cursor.execute(update_understood)
+                update_understood = """UPDATE TOPICS SET Understood = 1 WHERE TopicID=(?)"""
+                cursor.execute(update_understood, (topicid,))
                 connection.commit()
                 agent_state["topic"]= None
-                questlist = []
+                agent_state["question_list"].clear()
                 agent_state["count_topic_question"]= 0
                 agent_state["num_attempts"] =0
-                agent_state ["correct"]= 0
-                feed = []
-                responses_to_current =[]
+                agent_state["correct"]= 0
+                agent_state["feedback"].clear()
+                agent_state["responses_to_current_q"].clear()
+                agent_state["Now"] = "End of Topic"
+
+            else:
                 agent_state["Now"] = "End of Question"
 
-            
+                        
 setup()
-print("\n ===Check 1 of agent state ", agent_state, "===")        
+print("\n State check 1 \n ", agent_state, "=== \n")        
 generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsertopic)
-print("\n===Check 2 of agent state ", agent_state, "===")   
+print("\n State check 2 \n ", agent_state, "=== \n")        
 generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest)
-print("\n===Check 3 of agent state ", agent_state, "===")   
+print("\n State check 3 \n ", agent_state, "=== \n")        
 get_ans(agent_state=agent_state)
-print("\n===Check 4 of agent state ", agent_state, "===")   
+print("\n State check 4 \n ", agent_state, "=== \n")        
 mark_response(agent_state=agent_state, model = model , pydparserfeed=pydparserfeed)
-print("\n===Check 5 of agent state ", agent_state, "===")  
+print("\n State check 5 \n ", agent_state, "=== \n")        
