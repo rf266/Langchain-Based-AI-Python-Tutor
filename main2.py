@@ -151,21 +151,21 @@ def generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsert
     Returns: 
         JSON output with one field, "Topic" 
     """
-    firstin = input( "Choose a topic: ")
-    prompt = PromptTemplate(
-         template="""
-        You are a helpful python tutor. Right now you need to understand what topic the user wants to be tested on.
-        The user has entered this: \n {firstin} \n
-        Generate the name of the topic to be tested in the specified schema. 
-        If it is unclear then suggest your own topic, which must be python related. If there is a clear topic then just follow what the user meant. \n
-        Format instructions: {format_instructions}
-        You must force JSON output only, NOTHING ELSE
-        """,
-        input_variables=["firstin"],
-        partial_variables={"format_instructions": pydparsertopic.get_format_instructions()}
-
-    )
     if (agent_state["Now"]=="Accepting Topic" or agent_state["Now"]=="End of Topic" ) and ( agent_state["count_topic_question"]==0 or agent_state["count_topic_question"]==5 ):
+        firstin = input( "Choose a topic: ")
+        prompt = PromptTemplate(
+            template="""
+            You are a helpful python tutor. Right now you need to understand what topic the user wants to be tested on.
+            The user has entered this: \n {firstin} \n
+            Generate the name of the topic to be tested in the specified schema. 
+            If it is unclear then suggest your own topic, which must be python related. If there is a clear topic then just follow what the user meant. \n
+            Format instructions: {format_instructions}
+            You must force JSON output only, NOTHING ELSE
+            """,
+            input_variables=["firstin"],
+            partial_variables={"format_instructions": pydparsertopic.get_format_instructions()}
+
+        )
         chain = prompt | model | pydparsertopic
         output = chain.invoke({"firstin": firstin})
         print(output)
