@@ -74,6 +74,7 @@ def setup():
             first_understood = out1[2] 
             agent_state["topic_understood"] = first_understood# update state dict
 
+            #now we need to check if a question has been posed from this particular topic - case where the topics are established but no questions from the latest one
             sql_quest_lists = f"""SELECT Question FROM QUESTIONS WHERE TopicID = (SELECT TopicID FROM TOPICS WHERE Topic=(?) )  ORDER BY QID""" #get the questions for this topic
             cursor.execute(sql_quest_lists,(first_topic,))
             out2 = cursor.fetchall()
@@ -94,25 +95,32 @@ def setup():
             agent_state["num_attempts"] = first_attempts
             responses_to_current.append(first_resp)
             feed.append(first_feed)
-            agent_state["Now"] = "Accepting Topic"
-
-            if agent_state["count_topic_question"] ==5 and first_correct==1: #case where we are at the end of the current topic, reset state dict
-                agent_state["Now"] = "Accepting Topic"
+            
+            if agent_state["count_topic_question"] ==5 and first_correct==1: #case where we are at the end of the current topic, where all five questions were posed and the last one is correct (cannot proceed without attempting correctly) reset state dict
+                agent_state["Now"] = "Accepting Topic" #we can accept a new topic
                 agent_state["topic"]= None
                 agent_state["question_list"].clear()
                 agent_state["count_topic_question"]= 0
                 agent_state["num_attempts"] =0
-                agent_state ["correct"]= 0
+                agent_state["correct"]= 0
                 agent_state["feedback"].clear()
                 agent_state["responses_to_current_q"].clear()    
                 agent_state["correct"] = 0  
 
-            if first_correct == 0: 
+            elif agent_state["count_topic_question"] < 5 and first_correct==1: #correctly answered prev q, but still in the same topic, so we can ask a new question
+                agent_state["Now"] = "Pose Question"
+                agent_state["num_attempts"] =0
+                agent_state["correct"]= 0
+                agent_state["feedback"].clear()
+                agent_state["responses_to_current_q"].clear()    
+                agent_state["correct"] = 0
+
+            elif first_correct == 0: #the previous q was not answered correctly, regardless of the number of questions in the topic
+                print("You tried the previous question ", questlist[-1], " and you were not correct. Try again")
                 agent_state["Now"] = "Waiting for Response" #awaiting another response
 
         elif (rowstopic[0]>0) and (rowsquest[0]==0): #case where a topic is established but no questions asked yet
             sql_latesttopics = """SELECT * FROM TOPICS ORDER BY TopicID DESC LIMIT 1""" # find the latest topic from last record
-
             cursor.execute(sql_latesttopics)
             out1 = cursor.fetchone()
             first_topic = out1[1] #topic last tested
@@ -120,6 +128,8 @@ def setup():
             first_understood = out1[2] 
             agent_state["topic_understood"] = first_understood
             agent_state["Now"] = "Pose Question"
+
+    return agent_state
 
     
 model = ChatGroq(api_key=api, model="meta-llama/llama-4-scout-17b-16e-instruct", temperature=0.3)
@@ -193,24 +203,24 @@ def generate_question(agent_state=agent_state, model = model, pydparserquest = p
     Returns: 
         JSON output with one field, "Question" 
     """
-    
-    topic_now = agent_state["topic"]
-    prevq = agent_state["question_list"]
-
-    prompt = PromptTemplate(
-        template="""
-        You are a helpful python tutor. Right now you need to ask the user a question based on the topic.
-        The topic is this: \n {topic_now} \n
-        The set of previously asked questions is this: \n {prevq} \n
-        Do not repeat any questions of similar nature. \n
-        Format instructions: {format_instructions}
-        You must force JSON output only, NOTHING ELSE
-        """,
-        input_variables=["topic_now", "prevq"],
-        partial_variables={"format_instructions": pydparserquest.get_format_instructions()}
-
-    ) 
     if (agent_state["Now"]=="Pose Question" or agent_state["Now"]=="End of Question"  )and len(agent_state["question_list"])<5:
+
+        topic_now = agent_state["topic"]
+        prevq = agent_state["question_list"]
+
+        prompt = PromptTemplate(
+            template="""
+            You are a helpful python tutor. Right now you need to ask the user a question based on the topic.
+            The topic is this: \n {topic_now} \n
+            The set of previously asked questions is this: \n {prevq} \n
+            Do not repeat any questions of similar nature. \n
+            Format instructions: {format_instructions}
+            You must force JSON output only, NOTHING ELSE
+            """,
+            input_variables=["topic_now", "prevq"],
+            partial_variables={"format_instructions": pydparserquest.get_format_instructions()}
+
+        ) 
         chain = prompt | model | pydparserquest
         output = chain.invoke({"topic_now": topic_now, "prevq":prevq})
         print(output)
@@ -231,11 +241,11 @@ def get_ans(agent_state=agent_state):
           return response
 
 def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparserfeed):
-    nowquestion=agent_state["question_list"][-1]
-    nowresponse = agent_state["responses_to_current_q"][-1]
-    pastresponses = agent_state["responses_to_current_q"][:-1]
-    num_attempts = agent_state["num_attempts"]
     if agent_state["Now"] == 'Providing Feedback':
+        nowquestion=agent_state["question_list"][-1]
+        nowresponse = agent_state["responses_to_current_q"][-1]
+        pastresponses = agent_state["responses_to_current_q"][:-1]
+        num_attempts = agent_state["num_attempts"]
         prompt = PromptTemplate(
                template = """
                 As part of being a helpful Python tutor, you have to provide feedback to the user's response of a particular python question. Take the following into account strictly:
