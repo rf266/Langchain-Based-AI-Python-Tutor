@@ -77,24 +77,27 @@ def setup():
             #now we need to check if a question has been posed from this particular topic - case where the topics are established but no questions from the latest one
             sql_quest_lists = f"""SELECT Question FROM QUESTIONS WHERE TopicID = (SELECT TopicID FROM TOPICS WHERE Topic=(?) )  ORDER BY QID""" #get the questions for this topic
             cursor.execute(sql_quest_lists,(first_topic,))
-            out2 = cursor.fetchall()
+            out2 = cursor.fetchall()            
             print(out2)
-            for item in out2:
-                questlist.append(item[0]) # added the questions previously tested to the state
 
-            agent_state["count_topic_question"] = len(questlist) #number of questions tested added to state
+            if not out2: #if what was returned is empty, meaning no questions yet from this particular topic
+                agent_state["Now"] = "Pose Question"
+            else:
+                for item in out2:
+                    questlist.append(item[0]) # added the questions previously tested to the state
 
-            sql_quest_data = """SELECT * FROM QUESTIONS ORDER BY TopicID DESC LIMIT 1""" #get the last record in QUESTIONS
-            cursor.execute(sql_quest_data)
-            out3 = cursor.fetchone() #get the tuple of data
-            first_resp = out3[3]
-            first_feed = out3[4]
-            first_attempts = out3[5]
-            first_correct = out3[6] #collect all fields
+                agent_state["count_topic_question"] = len(questlist) #number of questions tested added to state
+                sql_quest_data = """SELECT * FROM QUESTIONS DESC LIMIT 1""" #get the last record in QUESTIONS
+                cursor.execute(sql_quest_data)
+                out3 = cursor.fetchone() #get the tuple of data
+                first_resp = out3[3]
+                first_feed = out3[4]
+                first_attempts = out3[5]
+                first_correct = out3[6] #collect all fields
 
-            agent_state["num_attempts"] = first_attempts
-            responses_to_current.append(first_resp)
-            feed.append(first_feed)
+                agent_state["num_attempts"] = first_attempts
+                responses_to_current.append(first_resp)
+                feed.append(first_feed)
             
             if agent_state["count_topic_question"] ==5 and first_correct==1: #case where we are at the end of the current topic, where all five questions were posed and the last one is correct (cannot proceed without attempting correctly) reset state dict
                 agent_state["Now"] = "Accepting Topic" #we can accept a new topic
@@ -307,14 +310,14 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
         else:
             agent_state["Now"] = "Waiting for Response" #awaiting another response
 
-                        
 setup()
-print("\n State check 1 \n ", agent_state, "=== \n")        
-generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsertopic)
-print("\n State check 2 \n ", agent_state, "=== \n")        
-generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest)
-print("\n State check 3 \n ", agent_state, "=== \n")        
-get_ans(agent_state=agent_state)
-print("\n State check 4 \n ", agent_state, "=== \n")        
-mark_response(agent_state=agent_state, model = model , pydparserfeed=pydparserfeed)
-print("\n State check 5 \n ", agent_state, "=== \n")        
+print("Check 1 \n",agent_state)
+while True:                 
+    generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsertopic)
+    print("Check 2 \n",agent_state)
+    generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest)
+    print("Check 3 \n",agent_state)
+    get_ans(agent_state=agent_state)
+    print("Check 4 \n",agent_state)
+    mark_response(agent_state=agent_state, model = model , pydparserfeed=pydparserfeed)
+    print("Check 5 \n",agent_state)
