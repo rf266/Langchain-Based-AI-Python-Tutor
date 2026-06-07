@@ -106,6 +106,8 @@ https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world 
 
 https://www.geeksforgeeks.org/python/python-flask-request-object/ - Flask request object
 
+https://stackoverflow.com/questions/393554/python-sqlite3-and-concurrency - Python concurrency
+
 #### Stack overflow questions I posted
 
 - https://stackoverflow.com/questions/79907528/why-does-groq-langchain-model-return-tool-use-failed-error/79907609#79907609
@@ -117,3 +119,5 @@ https://stackoverflow.com/questions/79915713/langchain-agent-state-preservation?
 https://ai.stackexchange.com/questions/50494/langchain-agent-state-preservation
 
 https://stackoverflow.com/questions/79951889/flask-backend-and-gradio-ui-error-500-function-missing-1-positional-argument
+
+https://stackoverflow.com/questions/79952563/flask-app-sqlite3-objects-created-in-one-thread-cannot-be-used-in-another/79952632#79952632

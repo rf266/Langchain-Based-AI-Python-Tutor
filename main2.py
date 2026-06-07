@@ -46,6 +46,7 @@ sql2 = """create table if not exists QUESTIONS(
 )"""
 
 def setup():
+    message=""
     try:
         cursor.execute("""SELECT COUNT(*) FROM TOPICS""") 
     except sqlite3.OperationalError:  #if TOPICS doesn't exist - must mean that the QUESTIONS doesn't exist either - checking if the db exists
@@ -53,6 +54,7 @@ def setup():
         cursor.execute(sql1)
         cursor.execute(sql2)     
         print("DB generated")
+        message= "Welcome - test out your skills and answer questions to get feedback! Enter your first topic"
         
         connection.commit() #create the db from scratch
     else: #otherwise populate the state dictionary with the latest record if the tables aren't empty based on cases
@@ -82,6 +84,7 @@ def setup():
             if not out2: #if what was returned is empty, meaning no questions yet from this particular topic
                 agent_state["Now"] = "Pose Question"
                 print("no questions found, starting from Q1")
+                message= f"Welcome back - you will be asked questions from the topic of {first_topic} as this is what you entered previously"
             else:
                 for item in out2:
                     agent_state["question_list"].append(item[0]) #added the questions previously tested to the state
@@ -109,6 +112,7 @@ def setup():
                 agent_state["feedback"].clear()
                 agent_state["responses_to_current_q"].clear()    
                 agent_state["correct"] = 0  
+                message = "Welcome back - choose a new topic now"
 
             elif agent_state["count_topic_question"] < 5 and first_correct==1: #correctly answered prev q, but still in the same topic, so we can ask a new question
                 agent_state["Now"] = "Pose Question"
@@ -117,12 +121,14 @@ def setup():
                 agent_state["feedback"].clear()
                 agent_state["responses_to_current_q"].clear()    
                 agent_state["correct"] = 0
+                message = "Welcome back- Your topic is {first_topic} which is where we left off last time."
 
             elif first_correct == 0: #the previous q was not answered correctly, regardless of the number of questions in the topic
                 print("You tried the previous question ", agent_state["question_list"][-1], " and you were not correct. Try again")
                 agent_state["Now"] = "Waiting for Response" #awaiting another response
+                message = f"Welcome back - your previous question was {agent_state["question_list"][-1]} and was not answered corrrectly - have another go."
 
-        elif (rowstopic[0]>0) and (rowsquest[0]==0): #case where a topic is established but no questions asked yet
+        elif (rowstopic[0]>0) and (rowsquest[0]==0): #case where the first topic is established but no questions asked yet
             sql_latesttopics = """SELECT * FROM TOPICS ORDER BY TopicID DESC LIMIT 1""" # find the latest topic from last record
             cursor.execute(sql_latesttopics)
             out1 = cursor.fetchone()
@@ -131,8 +137,9 @@ def setup():
             first_understood = out1[2] 
             agent_state["topic_understood"] = first_understood
             agent_state["Now"] = "Pose Question"
+            message = f"Welcome to your first topic - {first_topic} - We will proceed from here. "
 
-    return agent_state
+    return agent_state, message
 
     
 model = ChatGroq(api_key=api, model="meta-llama/llama-4-scout-17b-16e-instruct", temperature=0.3, streaming=True)
@@ -203,9 +210,11 @@ def generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsert
         connection.commit()
 
         return topic
+    else:
+         return text
         
 
-def generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest):
+def generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest, text=text):
     """
     A function that takes the state's Topic field and generates a question with the LLM. then updates the state with the current question
 
@@ -243,6 +252,8 @@ def generate_question(agent_state=agent_state, model = model, pydparserquest = p
         agent_state["Now"]="Waiting for Response"
         agent_state["count_topic_question"] =  agent_state["count_topic_question"] +1
         return question
+    else:
+         return text
 
 
 
@@ -252,9 +263,11 @@ def get_ans(agent_state=agent_state, text=text):
           agent_state["Now"] = 'Providing Feedback'
           agent_state["responses_to_current_q"].append(response)
           agent_state["num_attempts"] = agent_state["num_attempts"] +1
-          
+    
+     else:
+          return text
 
-def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparserfeed):
+def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparserfeed, text=text):
     if agent_state["Now"] == 'Providing Feedback':
         nowquestion=agent_state["question_list"][-1]
         nowresponse = agent_state["responses_to_current_q"][-1]
@@ -327,7 +340,9 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
 
         else:
             agent_state["Now"] = "Waiting for Response" #awaiting another response
-    return output.feedback
+        return output.feedback
+    else: 
+         return text
 
 
 if __name__=="__main__":
