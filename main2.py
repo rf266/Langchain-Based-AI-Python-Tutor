@@ -24,7 +24,7 @@ agent_state = {
     "Now": "Accepting Topic"
 }
 
-connection = sqlite3.connect("learn.db")
+connection = sqlite3.connect("learn.db",check_same_thread=False)
 
 cursor = connection.cursor()
 
