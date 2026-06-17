@@ -236,7 +236,8 @@ def generate_question(agent_state=agent_state, model = model, pydparserquest = p
             The topic is this: \n {topic_now} \n
             The set of previously asked questions is this: \n {prevq} \n
             Do not repeat any questions of similar nature. \n
-            Format instructions: {format_instructions}
+            Format instructions: {format_instructions} \n
+            Ensure questions are direct, and specific. Do not be vague, or ask multiple questions at once. \n
             You must force JSON output only, NOTHING ELSE
             """,
             input_variables=["topic_now", "prevq"],
@@ -284,6 +285,8 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
                 You must force JSON output only, NOTHING ELSE. 
                 Feedback must be concise. Don't give away the right answer, unless the number of attempts has increased too much and they show no understanding of the concept. \n
                 Do not penalise arbritary issues with how they responded - conceptual understanding is the main goal. They may respond with half sentences so you must build a concept of their understanding from previous responses. \n
+                Do not ask them to be more specific with how they respond. As long as they got the main idea, its correct. \n
+                BE SPECIFC IF THEY CAN PROCEED TO THE NEXT QUESTION \n
                 Unless the question asks, no need for syntax.
                 """,
 
