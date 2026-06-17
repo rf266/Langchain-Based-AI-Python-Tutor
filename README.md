@@ -1,38 +1,46 @@
 # AI Coding Tutor Agent 
 
-This agent is an AI-powered coding tutor. It is designed to help users strengthen their conceptual and code understanding of Python by asking questions targetting specific topics. 
+This agent is an AI-powered coding tutor. It is designed to help users strengthen their conceptual and code understanding of Python by asking questions targetting specific topics. The workflow is structured, allowing a predictable process to help grasp key topics. 
 
 **This project is a work in progress**. Currently, I am working through state preservation challenges, and developing efficient system design to allow the LLM to have an approporiate level of control over the process. 
 
 ## Tech Stack
 - Langchain agent orchestration
 - SQLite database storage
-- Gradio prototyping - UI
+- Pydantic Basemodel for schema validation
+- Gradio UI and server
 
-*AI was used throuhgout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate through unfamiliar challenges.*
+*AI was used throuhgout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate through unfamiliar challenges especially where I have gaps in technical knowledge.*
+
+## Functionality
+Each topic is tested with five questions. The user has the chance to choose their own topic, or ask the LLM to suggest one, where the TOPICS table is searched to prevent any repetition. When the user answers the first question, feedback is provided to guide them to the correct answer. In the backend, a new record is created for the particular question, containing the response and feedback provided. When the question is reattempted, the new feedback and response is appended to the text already in the respective cells. 
+
+An AI-suggested state dictionary is used to organise the workflow in the required order. This is updated based on the current stage of the workflow, and is also used as a kind of short term memory for the question and topic, ensuring that details are kept easy to access until the next question is asked. 
+
 
 ## Significant Decisions in Agent Development
 
-- Agent creation 
-The structure and functions of the different components of a Langchain agent were investigated. This was used instead of sending API calls to the LLM due to the presence of tool functions which could be used as required by the situation. The chosen LLM, after experimenting with responses and token size limitations, was Llama 4 Scout, obtained from Groq. However, after looking into advice from AI after resulting in multiple 'tool use failed' errors, the tool functionality was abandoned for normal function definitions. 
+### Agent creation 
+The structure and functions of the different components of a Langchain agent were investigated. This was used instead of sending API calls to the LLM due to the presence of tool functions which could be used as required by the situation. The chosen LLM, after experimenting with responses and token size limitations, was Llama 4 Scout, obtained from Groq. However, after looking into advice from AI after resulting in multiple 'tool use failed' errors, the tool functionality was abandoned for normal function definitions, with appropriate prompt templates to manually preserve context. 
 
-- Tool Development
-One of the most significant challenges was seen in tool development, where, after research and AI consultation, it was found that the LLM must be explicitly shown the tools it can used to operate as desired. The uncertainty created by missing information causes the model to behave unpredictably, where I even found that it was creating its own functions, as well as generating its own SQL queries. Hence after online and AI research, this is currently not being used, although it may be done for less pertinent features. 
+### Tool Development
+One of the most significant challenges was seen in tool development, where, after research and AI consultation, it was found that the LLM must be explicitly shown the tools it can used to operate as desired. The uncertainty created by missing information causes the model to behave unpredictably, where I even found that it was creating its own functions, as well as generating its own SQL queries. Hence after online and AI research, **this is currently not being used.**.
 
 Another important consideration was the level of detail to be provided in tool docstrings. It was often the case that the lengthy docstrings would override token limitations, especially in the earlier LLMs tested. I learnt how to ensure that the LLM has complete knowledge over the full interactions it can have over the tool. 
 
 The system prompt was also one of concern, where it was found that a detailed prompt was required to outline all use cases and prevent uncertainties for the model. It deeply outlined a typical agent workflow, database schema and style of interaction. 
 
-- SQLite database
-
+### SQLite database
 A database was created to store the topics and questions posed to the user, as part of a tracking system to allow the the agent to analyse how the questions were answered. 
 
 The database schema is below:
 TOPICS(TopicID, Topic, Understood)
 QUESTIONS(QID, TopicID, Question, Response, Feedback, Attempts)
 
-A one to many relationship is demonstrated - one topic can have many questions, but one question can have one topic, for now. 
+A one to many relationship is demonstrated - one topic can have many questions, but one question can have one topic. 
 
+### Gradio UI and Flask Involvement
+Gradio was used for the UI due to it being Python-native, allowing fast prototyping. Initially, Flask was set as the backend service for messages being sent to and from the Langchain functions. However, due to the unnecessary complexity added by Flask, I resorted to using the built in Gradio hosting server. I realised that even though it is important to experiment with different frameworks, adding complexity to a task which may be executed in more simple manner was not ideal. 
 
 
 ## Sources - non exhaustive 
@@ -107,6 +115,12 @@ https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world 
 https://www.geeksforgeeks.org/python/python-flask-request-object/ - Flask request object
 
 https://stackoverflow.com/questions/393554/python-sqlite3-and-concurrency - Python concurrency
+
+https://medium.com/@alfininfo/flask-tutorial-implementing-server-sent-events-sse-for-real-time-updates-60103cd89fbf - SSE
+
+https://www.geeksforgeeks.org/python/python-yield-keyword/ - yield keyword
+
+
 
 #### Stack overflow questions I posted
 

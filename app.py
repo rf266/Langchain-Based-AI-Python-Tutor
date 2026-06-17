@@ -76,15 +76,18 @@ def startup():
 
 @app.route("/submit", methods=["POST","GET"])
 def submission():
+   
     text = request.json.get("text")
-    print("Check 1 \n",agent_state)               
-    text = generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsertopic, text=text)
-    print("Check 2 \n",agent_state)
-    text = generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest, text=text)
-    print("Check 3 \n",agent_state)
-    text= get_ans(agent_state=agent_state, text=text)
-    print("Check 4 \n",agent_state)
-    text=mark_response(agent_state=agent_state, model = model , pydparserfeed=pydparserfeed,text=text)
-    print("Check 5 \n",agent_state)
-    return text
+    def gen():
+        nonlocal text
+        print("Check 1 \n",agent_state)               
+        text = generate_topic(agent_state=agent_state,model=model,pydparsertopic=pydparsertopic, text=text)
+        print("Check 2 \n",agent_state)
+        text = generate_question(agent_state=agent_state, model = model, pydparserquest = pydparserquest, text=text)
+        print("Check 3 \n",agent_state)
+        text= get_ans(agent_state=agent_state, text=text)
+        print("Check 4 \n",agent_state)
+        text=mark_response(agent_state=agent_state, model = model , pydparserfeed=pydparserfeed,text=text)
+        print("Check 5 \n",agent_state)
+        return text
 

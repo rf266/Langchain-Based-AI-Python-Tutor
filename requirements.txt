@@ -1,0 +1,10 @@
+flask
+gradio
+requests
+langchain_core
+langchain_groq
+json
+os
+pydantic
+sqlite3
+dotenv
