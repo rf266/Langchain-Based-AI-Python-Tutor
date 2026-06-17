@@ -92,4 +92,4 @@ with gr.Blocks() as app:
     submit_b.click(fn=submission, inputs=[inp, out], outputs=[inp,out])
     
     
-app.launch()
+app.launch(server_name="0.0.0.0", server_port=7860)
