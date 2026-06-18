@@ -11,7 +11,7 @@ load_dotenv()
 api = os.getenv("GROQ_API_KEY")
 text = ""
 
-connection = sqlite3.connect("learn.db", check_same_thread=False)
+connection = sqlite3.connect("/data/learn.db")
 
 cursor = connection.cursor()
 
