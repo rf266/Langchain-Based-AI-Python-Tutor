@@ -2,8 +2,6 @@
 
 This agent is an AI-powered coding tutor. It is designed to help users strengthen their conceptual and code understanding of Python by asking questions targetting specific topics. The workflow is structured, allowing a predictable process to help grasp key topics. 
 
-**This project is a work in progress**. Currently, I am working through state preservation challenges, and developing efficient system design to allow the LLM to have an approporiate level of control over the process. 
-
 ## Tech Stack
 - Langchain agent orchestration
 - SQLite database storage
@@ -17,7 +15,6 @@ This agent is an AI-powered coding tutor. It is designed to help users strengthe
 Each topic is tested with five questions. The user has the chance to choose their own topic, or ask the LLM to suggest one, where the TOPICS table is searched to prevent any repetition. When the user answers the first question, feedback is provided to guide them to the correct answer. In the backend, a new record is created for the particular question, containing the response and feedback provided. When the question is reattempted, the new feedback and response is appended to the text already in the respective cells. 
 
 An AI-suggested state dictionary is used to organise the workflow in the required order. This is updated based on the current stage of the workflow, and is also used as a kind of short term memory for the question and topic, ensuring that details are kept easy to access until the next question is asked. Additionally, another specific aspect where AI was used was in coming up with the correct logic for the workflow's progression on the UI - intially, while testing on the CLI, a while loop was used. However, when the submission button was created on the UI, I used AI assistance to help map out the logic for the next steps to be passed based on the current agent state. Additionally, the built in AI agent within Railway was useful in navigating port/URL hosting challenges, as well as the storage needs of a persistent database.
-
 
 ## Significant Decisions in Agent Development
 
@@ -43,6 +40,16 @@ A one to many relationship is demonstrated - one topic can have many questions, 
 ### Gradio UI and Flask Involvement
 Gradio was used for the UI due to it being Python-native, allowing fast prototyping. Initially, Flask was set as the backend service for messages being sent to and from the Langchain functions. However, due to the unnecessary complexity added by Flask, I resorted to using the built in Gradio hosting server. I realised that even though it is important to experiment with different frameworks, adding complexity to a task which may be executed in more simple manner was not ideal. 
 
+## Evaluation
+Several key additions and future developments could allow the tutor's functionality to expand, serving to become more informative for users. For example, long term analytics was suggested by AI as one interesting addition. Tutees could be given the ability to track their progress over topics, seeing where their strengths and weaknesses lie. Topics suggestions could also be tailored to this data - it could suggest topics which are close to ones the user has already struggled with, which would build greater depth and understanding. Langchain's tool abilities would make more sense over here, where, at periodic moments, it could query the database to provide an insight/summary. 
+
+Additionally, the UI could benefit from a significant improvement in intuitiveness, as well as the functionality of textboxes, which could perhaps be replaced with the Gradio chatbot template for a more natural looking tutor. 
+
+Additional functions to have a conversation agent state could be interesting, where, moving beyond the Q and A would allow users to discuss more general aspects of their learning journey with the tutor, which could perhaps be supported by data from the database to provide context. 
+
+Greater support for edge cases, and validation of inputs could provide a smoother user experience, making it feel more natural. Additionally, this could be supported by cautions like rate limiting, to prevent the HTTP Too Many Requests error from arising. 
+
+Currently, the deployed container involves one database. This means that if the link was distributed to multiple users, they would all fill up the same instance of this database. For better scalability, accomodating more users and providing them with their own setup, through auth and login, would allow them to revisit their own progress, rather than the conflicted version which will arise in the current manner. This expansion would involve choosing plans beyond the free tier with both Railway and Groq as the LLM provider. 
 
 ## Sources - non exhaustive 
 
@@ -64,7 +71,6 @@ Requests
 ### Help/research 
 - https://www.youtube.com/watch?v=jsX99U8UkOo - SQLite DB Creation 
 
-
 - https://www.w3schools.com/sql/sql_datatypes.asp - SQL Datatypes
 
 - https://www.youtube.com/watch?v=eD2oAsalw7E - SQLite DB table creation 
@@ -73,55 +79,49 @@ Requests
 
 - https://stackoverflow.com/questions/29076312/inserting-sqlite-primary-key-in-python - Primary key 
 
--https://www.ibm.com/think/topics/llm-temperature#:~:text=Temperature%20controls%20the%20randomness%20of,according%20to%20a%20probability%20distribution. - model temperature
+- https://www.ibm.com/think/topics/llm-temperature#:~:text=Temperature%20controls%20the%20randomness%20of,according%20to%20a%20probability%20distribution. - model temperature
 
 - https://www.reddit.com/r/LangChain/comments/1k0adul/custom_tools_with_multiple_parameters/ - tool parameters and docstring structure
 
-
-https://www.reddit.com/r/LangChain/comments/1kfifju/is_it_possible_to_do_tool_calling_sql_with/ - Langchain tool calling 
-
+- https://www.reddit.com/r/LangChain/comments/1kfifju/is_it_possible_to_do_tool_calling_sql_with/ - Langchain tool calling 
 
 - https://github.com/langchain-ai/langchain-aws/issues/524 snake case
 
-
 - https://www.reddit.com/r/LocalLLaMA/comments/13nm96l/models_are_repeating_text_several_times/ - repeated words generated 
 
+- https://www.arsturn.com/blog/langchain-llm-returning-empty-results-common-fixes - empty outputs
 
-https://www.arsturn.com/blog/langchain-llm-returning-empty-results-common-fixes - empty outputs
+- https://www.youtube.com/watch?v=vzJOAnwIokM - Langchain overview
 
-https://www.youtube.com/watch?v=vzJOAnwIokM - Langchain overview
+- https://medium.com/data-and-beyond/output-parsers-in-langchain-b2e0db20880f -  output parsers
 
-https://medium.com/data-and-beyond/output-parsers-in-langchain-b2e0db20880f -  output parsers
+- https://www.youtube.com/watch?v=v9G-h6Ygokk - LCEL operator
 
-https://www.youtube.com/watch?v=v9G-h6Ygokk - LCEL operator
+- https://stackoverflow.com/questions/5191503/how-to-select-the-last-record-of-a-table-in-sql - Latest entry in DB
 
-https://stackoverflow.com/questions/5191503/how-to-select-the-last-record-of-a-table-in-sql - Latest entry in DB
+- https://www.youtube.com/watch?v=Hyo9rIuYlFc&t=40s - DB extraction statement
 
-https://www.youtube.com/watch?v=Hyo9rIuYlFc&t=40s - DB extraction statement
+- https://stackoverflow.com/questions/4397757/how-can-i-check-to-see-if-my-sqlite-table-has-data-in-it - check if tables are empty 
 
-https://stackoverflow.com/questions/4397757/how-can-i-check-to-see-if-my-sqlite-table-has-data-in-it - check if tables are empty 
+- https://www.w3schools.com/Python/python_try_except.asp - Try except statement
 
-https://www.w3schools.com/Python/python_try_except.asp - Try except statement
+- https://stackoverflow.com/questions/10588317/python-function-global-variables - Global variable manipulation
 
-https://stackoverflow.com/questions/10588317/python-function-global-variables - Global variable manipulation
+- https://medium.com/@danaasa/building-a-chatbot-with-gradio-a-practical-guide-06986342ef07 - Gradio chatbot
 
-https://medium.com/@danaasa/building-a-chatbot-with-gradio-a-practical-guide-06986342ef07 - Gradio chatbot
+- https://ihitsuperhuman.medium.com/deploy-your-first-ml-app-using-gradio-1684eec7eb5f - Gradio textbox
 
-https://ihitsuperhuman.medium.com/deploy-your-first-ml-app-using-gradio-1684eec7eb5f - Gradio textbox
+- https://flask-cors.readthedocs.io/en/latest/ - CORS
 
-https://flask-cors.readthedocs.io/en/latest/ - CORS
+- https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world - Flask 
 
-https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world - Flask 
+- https://www.geeksforgeeks.org/python/python-flask-request-object/ - Flask request object
 
-https://www.geeksforgeeks.org/python/python-flask-request-object/ - Flask request object
+- https://stackoverflow.com/questions/393554/python-sqlite3-and-concurrency - Python concurrency
 
-https://stackoverflow.com/questions/393554/python-sqlite3-and-concurrency - Python concurrency
+- https://medium.com/@alfininfo/flask-tutorial-implementing-server-sent-events-sse-for-real-time-updates-60103cd89fbf - SSE
 
-https://medium.com/@alfininfo/flask-tutorial-implementing-server-sent-events-sse-for-real-time-updates-60103cd89fbf - SSE
-
-https://www.geeksforgeeks.org/python/python-yield-keyword/ - yield keyword
-
-
+- https://www.geeksforgeeks.org/python/python-yield-keyword/ - yield keyword
 
 #### Stack overflow questions I posted
 
@@ -129,10 +129,10 @@ https://www.geeksforgeeks.org/python/python-yield-keyword/ - yield keyword
 
 - https://stackoverflow.com/questions/79910632/langchain-tool-does-not-implement-database-record-addition?r=2
 
-https://stackoverflow.com/questions/79915713/langchain-agent-state-preservation?r=2
+- https://stackoverflow.com/questions/79915713/langchain-agent-state-preservation?r=2
 
-https://ai.stackexchange.com/questions/50494/langchain-agent-state-preservation
+- https://ai.stackexchange.com/questions/50494/langchain-agent-state-preservation
 
-https://stackoverflow.com/questions/79951889/flask-backend-and-gradio-ui-error-500-function-missing-1-positional-argument
+- https://stackoverflow.com/questions/79951889/flask-backend-and-gradio-ui-error-500-function-missing-1-positional-argument
 
-https://stackoverflow.com/questions/79952563/flask-app-sqlite3-objects-created-in-one-thread-cannot-be-used-in-another/79952632#79952632
+- https://stackoverflow.com/questions/79952563/flask-app-sqlite3-objects-created-in-one-thread-cannot-be-used-in-another/79952632#79952632
