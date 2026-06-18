@@ -348,7 +348,7 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
                 agent_state["responses_to_current_q"].clear()
                 agent_state["Now"] = "End of Topic"
                 msg= "You can pick a new topic now"
-                return msg
+                return f"{output.feedback}. {msg}"
 
             else: #if we havent finished with the topic and have to go to the next question
                 agent_state["Now"] = "End of Question"
