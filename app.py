@@ -36,7 +36,7 @@ model = ChatGroq(api_key=api, model="meta-llama/llama-4-scout-17b-16e-instruct",
 def startup():
     global agent_state
     agent_state, message = setup()
-    print(message)
+    print("This is the message ", message)
     return message
 
 
@@ -88,8 +88,8 @@ with gr.Blocks() as app:
     submit_b = gr.Button(value="Submit")
 
 
-    app.load(fn=startup, inputs = None, outputs=out)
+    app.load(fn=startup, inputs = None, outputs=out, queue=False)
     submit_b.click(fn=submission, inputs=[inp, out], outputs=[inp,out])
     
     
-app.launch(server_name="0.0.0.0", server_port=7860)
+app.launch(server_name="0.0.0.0", server_port=7860,show_error=True)
