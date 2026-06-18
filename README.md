@@ -7,11 +7,11 @@ Deployed link: https://learning-agent-production-5c6e.up.railway.app/
 ## Tech Stack
 - Langchain agent orchestration
 - SQLite database storage
-- Pydantic Basemodel for schema validation
+- Pydantic Basemodel for schema design
 - Gradio UI and server
 - Railway deployment
 
-*AI was used throuhgout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate through unfamiliar challenges especially where I have gaps in technical knowledge.*
+*AI was used throuhgout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate through unfamiliar challenges especially where I have gaps in technical knowledge. Read ahead to find some cases where AI was pivotal in solving these challenges.*
 
 ## Functionality
 Each topic is tested with five questions. The user has the chance to choose their own topic, or ask the LLM to suggest one, where the TOPICS table is searched to prevent any repetition. When the user answers the first question, feedback is provided to guide them to the correct answer. In the backend, a new record is created for the particular question, containing the response and feedback provided. When the question is reattempted, the new feedback and response is appended to the text already in the respective cells. 
@@ -40,7 +40,10 @@ QUESTIONS(QID, TopicID, Question, Response, Feedback, Attempts)
 A one to many relationship is demonstrated - one topic can have many questions, but one question can have one topic. 
 
 ### Gradio UI and Flask Involvement
-Gradio was used for the UI due to it being Python-native, allowing fast prototyping. Initially, Flask was set as the backend service for messages being sent to and from the Langchain functions. However, due to the unnecessary complexity added by Flask, I resorted to using the built in Gradio hosting server. I realised that even though it is important to experiment with different frameworks, adding complexity to a task which may be executed in more simple manner was not ideal. 
+Gradio was used for the UI due to it being Python-native, allowing fast prototyping. Initially, Flask was set as the backend service for messages being sent to and from the Langchain functions. However, due to the unnecessary complexity added by Flask, I resorted to using the built in Gradio hosting server. The Flask addition came to involve added layers to stream communication between the user and the tutor, where it didn't really serve as a value add, given that Gradio also has its own server capabilities. I realised that even though it is important to experiment with different frameworks, adding complexity to a task which may be executed in more simple manner was not ideal. 
+
+### Python generator functions 
+One important issue I kept facing when combining the backend and the frontend was the role of the 'submit' button on the UI. Events were not being triggered sequentially with one click of the button, due to the return statements in the submission function. I was then introduced to the 'yield' term, which allows a function to continue where it left off earlier. I was then able to use AI to group together the two key functions, getting a topic/question and recieving feedback from the submitted answer, to ensure the flow looks natural.
 
 ## Evaluation
 Several key additions and future developments could allow the tutor's functionality to expand, serving to become more informative for users. For example, long term analytics was suggested by AI as one interesting addition. Tutees could be given the ability to track their progress over topics, seeing where their strengths and weaknesses lie. Topics suggestions could also be tailored to this data - it could suggest topics which are close to ones the user has already struggled with, which would build greater depth and understanding. Langchain's tool abilities would make more sense over here, where, at periodic moments, it could query the database to provide an insight/summary. 
