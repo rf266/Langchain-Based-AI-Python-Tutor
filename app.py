@@ -37,7 +37,7 @@ def startup():
     global agent_state
     agent_state, message = setup()
     print(message)
-    return message, agent_state
+    return message
 
 
 def submission(text, prev): 
