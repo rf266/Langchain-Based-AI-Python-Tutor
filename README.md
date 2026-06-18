@@ -2,6 +2,8 @@
 
 This agent is an AI-powered coding tutor. It is designed to help users strengthen their conceptual and code understanding of Python by asking questions targetting specific topics. The workflow is structured, allowing a predictable process to help grasp key topics. 
 
+Deployed link: https://learning-agent-production-5c6e.up.railway.app/
+
 ## Tech Stack
 - Langchain agent orchestration
 - SQLite database storage
@@ -47,7 +49,9 @@ Additionally, the UI could benefit from a significant improvement in intuitivene
 
 Additional functions to have a conversation agent state could be interesting, where, moving beyond the Q and A would allow users to discuss more general aspects of their learning journey with the tutor, which could perhaps be supported by data from the database to provide context. 
 
-Greater support for edge cases, and validation of inputs could provide a smoother user experience, making it feel more natural. Additionally, this could be supported by cautions like rate limiting, to prevent the HTTP Too Many Requests error from arising. 
+Greater support for edge cases, where the input sequence being performed in a different way may cause the tutor to crash, and validation of inputs could provide a smoother user experience, making it feel more natural. Additionally, this could be supported by cautions like rate limiting, to prevent the HTTP Too Many Requests error from arising. 
+
+Moreover, the correction of responses runs solely on the discretion of the LLM. Although efforts have been made to provide a clear system prompt for how the response is to be marked, we cannot avoid the fact that LLMs are probabalistic. They may output a response which does not necessarily appreciate the understanding the user has implied in their response. It may think that the response is lacking, or even incorrect, even though a conceptual understanding has been demonstrated to the human eye. 
 
 Currently, the deployed container involves one database. This means that if the link was distributed to multiple users, they would all fill up the same instance of this database. For better scalability, accomodating more users and providing them with their own setup, through auth and login, would allow them to revisit their own progress, rather than the conflicted version which will arise in the current manner. This expansion would involve choosing plans beyond the free tier with both Railway and Groq as the LLM provider. 
 
