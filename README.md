@@ -64,13 +64,13 @@ One of the main challenges was navigating outdated documentation/fixes, even if 
 By looking at forums, I was able to understand how to better structure my code, especially docstrings, which are the fundamental instruction for the LLM's tool orchestration. 
 
 ### Documentation 
-Langchain
-Groq-Langchain
-SQLite - Python docs
-HuggingFace - model information 
-Gradio 
-Flask
-Requests
+- Langchain
+- Groq-Langchain
+- SQLite - Python docs
+- HuggingFace - model information 
+- Gradio 
+- Flask
+- Requests
 
 ### Help/research 
 - https://www.youtube.com/watch?v=jsX99U8UkOo - SQLite DB Creation 
