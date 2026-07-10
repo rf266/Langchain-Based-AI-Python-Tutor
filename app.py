@@ -31,7 +31,7 @@ sql2 = """create table if not exists QUESTIONS(
     Correct integer,
     FOREIGN KEY (TopicID) REFERENCES TOPICS(TopicID)
 )"""
-model = ChatGroq(api_key=api, model="meta-llama/llama-4-scout-17b-16e-instruct", temperature=0.3, streaming=True)
+model = ChatGroq(api_key=api, model="openai/gpt-oss-120b", temperature=0.3, streaming=True)
 
 def startup():
     global agent_state
