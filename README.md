@@ -1,6 +1,6 @@
 # AI Python Tutor  
 
-This agent is an AI-powered coding tutor. It is designed to help users strengthen their conceptual and code understanding of Python by asking questions targetting specific topics. The workflow is structured, allowing a predictable process to help grasp key topics. 
+This agent is an AI-powered coding tutor. It is designed to help users strengthen their conceptual and code understanding of Python by asking questions targeting specific topics. The workflow is structured, allowing a predictable process to help grasp key topics. 
 
 Deployed link: https://learning-agent-production-5c6e.up.railway.app/
 
@@ -11,7 +11,7 @@ Deployed link: https://learning-agent-production-5c6e.up.railway.app/
 - Gradio UI and server
 - Railway deployment
 
-*AI was used throuhgout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate through unfamiliar challenges especially where I have gaps in technical knowledge. Read ahead to find some cases where AI was pivotal in solving these challenges.*
+*AI was used throughout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate unfamiliar challenges especially where I have gaps in technical knowledge. Read ahead to find some cases where AI was pivotal in solving these challenges.*
 
 ## Functionality
 Each topic is tested with five questions. The user has the chance to choose their own topic, or ask the LLM to suggest one, where the TOPICS table is searched to prevent any repetition. When the user answers the first question, feedback is provided to guide them to the correct answer. In the backend, a new record is created for the particular question, containing the response and feedback provided. When the question is reattempted, the new feedback and response is appended to the text already in the respective cells. 
@@ -24,14 +24,14 @@ An AI-suggested state dictionary is used to organise the workflow in the require
 The structure and functions of the different components of a Langchain agent were investigated. This was used instead of sending API calls to the LLM due to the presence of tool functions which could be used as required by the situation. The chosen LLM, after experimenting with responses and token size limitations, was Llama 4 Scout, obtained from Groq. However, after looking into advice from AI after resulting in multiple 'tool use failed' errors, the tool functionality was abandoned for normal function definitions, with appropriate prompt templates to manually preserve context. 
 
 ### Tool Development
-One of the most significant challenges was seen in tool development, where, after research and AI consultation, it was found that the LLM must be explicitly shown the tools it can used to operate as desired. The uncertainty created by missing information causes the model to behave unpredictably, where I even found that it was creating its own functions, as well as generating its own SQL queries. Hence after online and AI research, **this is currently not being used.**.
+One of the most significant challenges was seen in tool development, where, after research and AI consultation, it was found that the LLM must be explicitly shown the tools it can use to operate as desired. The uncertainty created by missing information causes the model to behave unpredictably, where I even found that it was creating its own functions, as well as generating its own SQL queries. Hence, following online and AI research, **this is currently not being used.**.
 
-Another important consideration was the level of detail to be provided in tool docstrings. It was often the case that the lengthy docstrings would override token limitations, especially in the earlier LLMs tested. I learnt how to ensure that the LLM has complete knowledge over the full interactions it can have over the tool. 
+Another important consideration was the level of detail to be provided in tool docstrings. It was often the case that the lengthy docstrings would override token limitations, especially in the earlier LLMs tested. I learnt how to ensure that the LLM has complete knowledge of the full interactions it can have with the tool. 
 
 The system prompt was also one of concern, where it was found that a detailed prompt was required to outline all use cases and prevent uncertainties for the model. It deeply outlined a typical agent workflow, database schema and style of interaction. 
 
 ### SQLite database
-A database was created to store the topics and questions posed to the user, as part of a tracking system to allow the the agent to analyse how the questions were answered. 
+A database was created to store the topics and questions posed to the user, as part of a tracking system to allow the agent to analyse how the questions were answered. 
 
 The database schema is below:
 TOPICS(TopicID, Topic, Understood)
@@ -40,31 +40,31 @@ QUESTIONS(QID, TopicID, Question, Response, Feedback, Attempts)
 A one to many relationship is demonstrated - one topic can have many questions, but one question can have one topic. 
 
 ### Gradio UI and Flask Involvement
-Gradio was used for the UI due to it being Python-native, allowing fast prototyping. Initially, Flask was set as the backend service for messages being sent to and from the Langchain functions. However, due to the unnecessary complexity added by Flask, I resorted to using the built in Gradio hosting server. The Flask addition came to involve added layers to stream communication between the user and the tutor, where it didn't really serve as a value add, given that Gradio also has its own server capabilities. I realised that even though it is important to experiment with different frameworks, adding complexity to a task which may be executed in more simple manner was not ideal. 
+Gradio was used for the UI due to it being Python-native, allowing fast prototyping. Initially, Flask was set as the backend service for messages being sent to and from the Langchain functions. However, due to the unnecessary complexity added by Flask, I resorted to using the built in Gradio hosting server. The Flask addition came to involve added layers to stream communication between the user and the tutor, where it didn't really serve as a value add, given that Gradio also has its own server capabilities. I realised that even though it is important to experiment with different frameworks, adding complexity to a task which may be executed in a simpler manner was not ideal. 
 
 ### Python generator functions 
-One important issue I kept facing when combining the backend and the frontend was the role of the 'submit' button on the UI. Events were not being triggered sequentially with one click of the button, due to the return statements in the submission function. I was then introduced to the 'yield' term, which allows a function to continue where it left off earlier. I was then able to use AI to group together the two key functions, getting a topic/question and recieving feedback from the submitted answer, to ensure the flow looks natural.
+One important issue I kept facing when combining the backend and the frontend was the role of the 'submit' button on the UI. Events were not being triggered sequentially with one click of the button, due to the return statements in the submission function. I was then introduced to the 'yield' term, which allows a function to continue where it left off earlier. I was then able to use AI to group together the two key functions, getting a topic/question and receiving feedback from the submitted answer, to ensure the flow looks natural.
 
 ## Evaluation
 Several key additions and future developments could allow the tutor's functionality to expand, serving to become more informative for users. For example, long term analytics was suggested by AI as one interesting addition. Tutees could be given the ability to track their progress over topics, seeing where their strengths and weaknesses lie. Topics suggestions could also be tailored to this data - it could suggest topics which are close to ones the user has already struggled with, which would build greater depth and understanding. Langchain's tool abilities would make more sense over here, where, at periodic moments, it could query the database to provide an insight/summary. 
 
 Additionally, the UI could benefit from a significant improvement in intuitiveness, as well as the functionality of textboxes, which could perhaps be replaced with the Gradio chatbot template for a more natural looking tutor. 
 
-Additional functions to have a conversation agent state could be interesting, where, moving beyond the Q and A would allow users to discuss more general aspects of their learning journey with the tutor, which could perhaps be supported by data from the database to provide context. 
+Additional functions to have a conversation agent state could be interesting, where moving beyond the Q and A would allow users to discuss more general aspects of their learning journey with the tutor, which could perhaps be supported by data from the database to provide context. 
 
-Greater support for edge cases, where the input sequence being performed in a different way may cause the tutor to crash, and validation of inputs could provide a smoother user experience, making it feel more natural. Additionally, this could be supported by cautions like rate limiting, to prevent the HTTP Too Many Requests error from arising. 
+Greater support for edge cases, where the input sequence performed differently may cause the tutor to crash, and validation of inputs could provide a smoother user experience, making it feel more natural. Additionally, this could be supported by cautions like rate limiting, to prevent the HTTP Too Many Requests error from arising. 
 
-Moreover, the correction of responses runs solely on the discretion of the LLM. Although efforts have been made to provide a clear system prompt for how the response is to be marked, we cannot avoid the fact that LLMs are probabalistic. They may output a response which does not necessarily appreciate the understanding the user has implied in their response. It may think that the response is lacking, or even incorrect, even though a conceptual understanding has been demonstrated to the human eye. 
+Moreover, the correction of responses runs solely on the discretion of the LLM. Although efforts have been made to provide a clear system prompt for how the response is to be marked, we cannot avoid the fact that LLMs are probabilistic. They may output a response which does not necessarily appreciate the understanding the user has implied in their response. It may think that the response is lacking, or even incorrect, even though a conceptual understanding has been demonstrated to the human eye. 
 
-Currently, the deployed container involves one database. This means that if the link was distributed to multiple users, they would all fill up the same instance of this database. For better scalability, accomodating more users and providing them with their own setup, through auth and login, would allow them to revisit their own progress, rather than the conflicted version which will arise in the current manner. This expansion would involve choosing plans beyond the free tier with both Railway and Groq as the LLM provider. 
+Currently, the deployed container involves one database. This means that if the link was distributed to multiple users, they would all fill up the same instance of this database. For better scalability, accommodating more users and providing them with their own setup, through auth and login, would allow them to revisit their own progress, rather than the conflicted version which will arise in the current manner. This expansion would involve choosing plans beyond the free tier with both Railway and Groq as the LLM provider. 
 
 ## Sources - non exhaustive 
 
-AI was used throuhgout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate through unfamiliar challenges. Rather than taking its suggestions blindly, I tried to understand how and why it would fit into my code. It was also significant in decisions of rethinking architecture where the workflow did not work as expected. Suggested solutions were implemented with a careful eye. 
+AI was used throughout the process, supporting ideation, system design, debugging etc. This was an especially important tool, used with thought, to allow me to navigate through unfamiliar challenges. Rather than taking its suggestions blindly, I tried to understand how and why it would fit into my code. It was also significant whilst making decisions regarding rethinking architecture where the workflow did not work as expected. Suggested solutions were implemented with a careful eye. 
 
-One of the main challenges was navigating outdated documentation/fixes, even if published recently. Langchain grows at a rapid rate, and updates are done to the package quite frequently, and they are not all reflected. This is another reason why AI was used, to guide me through a process of finding a working solution. 
+One of the main challenges was navigating outdated documentation/fixes, even if published recently. Langchain grows at a rapid rate, and updates are done to the package quite frequently, which are not all reflected. This is another reason why AI was used, to guide me through a process of finding a working solution. 
 
-By looking at forums, I was able to understand how to better structure my code, especially docstrings, which are the fundamental instruction for the LLM's tool orchestration. 
+By looking at forums, I was able to understand how to better structure my code, especially docstrings, which are the fundamental instructions for the LLM's tool orchestration. 
 
 ### Documentation 
 - Langchain
