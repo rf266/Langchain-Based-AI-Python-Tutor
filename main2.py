@@ -286,17 +286,18 @@ def mark_response(agent_state=agent_state, model = model, pydparserfeed=pydparse
         num_attempts = agent_state["num_attempts"]
         prompt = PromptTemplate(
                template = """
-                As part of being a helpful Python tutor, you have to provide feedback to the user's response of a particular python question. Take the following into account strictly:
+                As part of being a helpful Python tutor, you have to provide feedback to the user's response to a particular python question. Take the following into account strictly:
                 \n This is the Question: {nowquestion} \n
                 This is the response the user gave: {nowresponse} \n
-                These are the past responses to the same question, if you would like to touch on prior mistakes {pastresponses} \n
+                These are the past responses to the same question, to on prior mistakes {pastresponses} \n
                 This is the number of attempts used in this question {num_attempts} \n
                 Format instructions: {format_instructions} \n
                 You must force JSON output only, NOTHING ELSE. 
                 Feedback must be concise. Don't give away the right answer, unless the number of attempts has increased too much and they show no understanding of the concept. \n
-                Do not penalise arbritary issues with how they responded - conceptual understanding is the main goal. They may respond with half sentences so you must build a concept of their understanding from previous responses. \n
-                Do not ask them to be more specific with how they respond. As long as they got the main idea, its correct. \n
-                BE SPECIFC IF THEY CAN PROCEED TO THE NEXT QUESTION \n
+                Do not penalise arbitrary issues with how they responded - conceptual understanding is the main goal. They may respond with half sentences so you must build a concept of their understanding from previous responses. \n
+                Do not ask them to be more specific with how they respond. As long as they got the main idea, it is correct. \n
+                BE SPECIFIC IF THEY CAN PROCEED TO THE NEXT QUESTION \n
+                You must see if they answered in parts across their response history - if cumulatively they got it, then it is correct. Say if it is correct or not explicitly.
                 Unless the question asks, no need for syntax.
                 """,
 
