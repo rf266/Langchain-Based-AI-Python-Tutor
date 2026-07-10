@@ -1,4 +1,4 @@
-# AI Coding Tutor Agent 
+# AI Python Tutor Agent 
 
 This agent is an AI-powered coding tutor. It is designed to help users strengthen their conceptual and code understanding of Python by asking questions targetting specific topics. The workflow is structured, allowing a predictable process to help grasp key topics. 
 
